@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isJoe() {
+      return isAuthenticated() && (
+        request.auth.token.email == "joe.kofisallc@gmail.com" || 
+        request.auth.uid == "3J0poak62cgEcMR7yIZ5Nb4PWa62"
+      );
+    }
+
+    function isAdmin() {
+      return isJoe() || (
+        isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'super_admin']
+      );
+    }
+
+    // ===============================================================
+    // Global Override for Joe
+    // ===============================================================
+    match /{document=**} {
+      allow read, write: if isJoe();
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+
+    match /spaces/{spaceId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // Simplified for now to avoid blocks
+    }
+
+    match /members/{memberId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /invoices/{invoiceId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /expenses/{expenseId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+    }
+
+    match /test/{docId} {
+      allow read: if isAuthenticated();
+    }
+  }
+}

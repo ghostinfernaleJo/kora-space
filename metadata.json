@@ -1,0 +1,5 @@
+{
+  "name": "CoWork Manager",
+  "description": "Système de gestion complet pour espaces de coworking : gestion des espaces, réservations, membres, facturation, dépenses et reporting avancé.",
+  "requestFramePermissions": []
+}

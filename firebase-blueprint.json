@@ -1,0 +1,118 @@
+{
+  "entities": {
+    "Space": {
+      "title": "Espace de travail",
+      "description": "Un espace physique disponible à la location (bureau, salle, poste).",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Nom de l'espace" },
+        "type": { "type": "string", "enum": ["fixed", "flexible", "meeting", "private", "event"], "description": "Type d'espace" },
+        "capacity": { "type": "number", "description": "Capacité en personnes" },
+        "price": { "type": "number", "description": "Prix de base" },
+        "billingCycle": { "type": "string", "enum": ["hour", "day", "month", "year"], "description": "Cycle de facturation" },
+        "status": { "type": "string", "enum": ["available", "occupied", "maintenance", "reserved"], "description": "Statut actuel" },
+        "equipments": { "type": "array", "description": "Liste des équipements" },
+        "photos": { "type": "array", "description": "URLs des photos" }
+      },
+      "required": ["name", "type", "price", "status"]
+    },
+    "Member": {
+      "title": "Membre / Locataire",
+      "description": "Un client utilisant les services de l'espace.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Nom complet ou raison sociale" },
+        "email": { "type": "string", "format": "email", "description": "Email de contact" },
+        "phone": { "type": "string", "description": "Numéro de téléphone" },
+        "company": { "type": "string", "description": "Entreprise (optionnel)" },
+        "status": { "type": "string", "enum": ["prospect", "active", "suspended", "expired", "archived"], "description": "Statut du membre" },
+        "joinDate": { "type": "string", "format": "date-time", "description": "Date d'adhésion" },
+        "photoUrl": { "type": "string", "description": "URL de la photo de profil" }
+      },
+      "required": ["name", "email", "status"]
+    },
+    "Booking": {
+      "title": "Réservation / Contrat",
+      "description": "Une location d'espace par un membre.",
+      "type": "object",
+      "properties": {
+        "spaceId": { "type": "string", "description": "ID de l'espace" },
+        "memberId": { "type": "string", "description": "ID du membre" },
+        "startDate": { "type": "string", "format": "date-time", "description": "Date de début" },
+        "endDate": { "type": "string", "format": "date-time", "description": "Date de fin" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "active", "cancelled", "expired"], "description": "Statut de la réservation" },
+        "totalPrice": { "type": "number", "description": "Prix total" },
+        "contractUrl": { "type": "string", "description": "URL du contrat PDF" }
+      },
+      "required": ["spaceId", "memberId", "startDate", "status"]
+    },
+    "Invoice": {
+      "title": "Facture",
+      "description": "Un document financier émis pour un membre.",
+      "type": "object",
+      "properties": {
+        "memberId": { "type": "string", "description": "ID du membre" },
+        "bookingId": { "type": "string", "description": "ID de la réservation associée" },
+        "number": { "type": "string", "description": "Numéro de facture" },
+        "amount": { "type": "number", "description": "Montant total" },
+        "date": { "type": "string", "format": "date-time", "description": "Date d'émission" },
+        "dueDate": { "type": "string", "format": "date-time", "description": "Date d'échéance" },
+        "status": { "type": "string", "enum": ["draft", "sent", "paid", "overdue", "cancelled"], "description": "Statut de paiement" },
+        "pdfUrl": { "type": "string", "description": "URL du PDF" }
+      },
+      "required": ["memberId", "number", "amount", "date", "status"]
+    },
+    "Expense": {
+      "title": "Dépense Opérationnelle",
+      "description": "Une charge liée au fonctionnement de l'espace.",
+      "type": "object",
+      "properties": {
+        "category": { "type": "string", "enum": ["rent", "energy", "staff", "maintenance", "supplies", "marketing", "insurance", "taxes", "investment", "other"], "description": "Catégorie de dépense" },
+        "amount": { "type": "number", "description": "Montant de la dépense" },
+        "date": { "type": "string", "format": "date-time", "description": "Date de la dépense" },
+        "supplier": { "type": "string", "description": "Fournisseur" },
+        "description": { "type": "string", "description": "Description" },
+        "status": { "type": "string", "enum": ["pending", "approved", "paid"], "description": "Statut de validation" },
+        "receiptUrl": { "type": "string", "description": "URL du justificatif scanné" }
+      },
+      "required": ["category", "amount", "date", "status"]
+    },
+    "User": {
+      "title": "Utilisateur Système",
+      "description": "Un utilisateur ayant accès à la plateforme.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "ID Firebase Auth" },
+        "name": { "type": "string", "description": "Nom complet" },
+        "email": { "type": "string", "format": "email", "description": "Email" },
+        "role": { "type": "string", "enum": ["super_admin", "admin", "accountant", "receptionist", "commercial", "member", "auditor"], "description": "Rôle système" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "AuditLog": {
+      "title": "Journal d'audit",
+      "description": "Trace des opérations effectuées par les utilisateurs.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "action": { "type": "string" },
+        "resource": { "type": "string" },
+        "resourceId": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "action", "resource", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/spaces": { "schema": "Space", "description": "Collection des espaces de travail" },
+    "/members": { "schema": "Member", "description": "Collection des membres et locataires" },
+    "/bookings": { "schema": "Booking", "description": "Collection des réservations et contrats" },
+    "/invoices": { "schema": "Invoice", "description": "Collection des factures" },
+    "/expenses": { "schema": "Expense", "description": "Collection des dépenses opérationnelles" },
+    "/users": { "schema": "User", "description": "Collection des profils utilisateurs" },
+    "/audit_logs": { "schema": "AuditLog", "description": "Journal des opérations" }
+  }
+}
